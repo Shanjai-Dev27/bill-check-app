@@ -22,7 +22,7 @@
     <h2>Delivery: Check Bill</h2>
     <form id="checkForm">
       <label for="billNumber">Bill Number</label>
-      <input type="text" id="billNumber" name="billNumber" placeholder="Enter bill number" required autofocus>
+      <input type="text" id="billNumber" name="billNumber" placeholder="Enter bill number" tabindex="1" required autofocus>
       <button type="submit">Check</button>
     </form>
     <div id="msg"></div>
@@ -34,13 +34,23 @@
     const input = document.getElementById('billNumber');
     const msg = document.getElementById('msg');
 
+    // Make sure the input is focused as soon as the page loads
+    window.addEventListener('load', () => input.focus());
+
+    // Pressing Enter in the field submits this form, which runs the check.
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      // Clear the previous result so an old "Paid" is never mistaken for the new answer
+      msg.textContent = 'Checking...';
+      msg.className = '';
       try {
         const res = await fetch('/api/bills/check?billNumber=' + encodeURIComponent(input.value));
         const data = await res.json();
         msg.textContent = data.message;
         msg.className = data.paid ? 'ok' : 'err';
+        // Clear the field (ready for the next bill) once a result has been shown
+        input.value = '';
+        input.focus();
       } catch (err) {
         msg.textContent = 'Could not reach the server.';
         msg.className = 'err';
